@@ -89,7 +89,7 @@ rm $LARGE_OSM_PBF_FILTERED
 
 if [ "$OUTPUT_FORMAT" = "mbtiles" ]; then
     echo "Merging MBTiles"
-    sqlite3 $SMALL_NAME "ATTACH DATABASE '$LARGE_NAME' AS large; BEGIN; DELETE FROM tiles WHERE zoom_level <= 7; INSERT INTO tiles (zoom_level, tile_column, tile_row, tile_data) SELECT zoom_level, tile_column, tile_row, tile_data FROM large.tiles; UPDATE metadata AS mm SET value = m.value FROM large.metadata AS m WHERE m.name = mm.name; COMMIT; DETACH DATABASE large;"
+    sqlite3 $SMALL_NAME "ATTACH DATABASE '$LARGE_NAME' AS large; BEGIN; DELETE FROM tiles WHERE zoom_level <= 7; INSERT INTO tiles (zoom_level, tile_column, tile_row, tile_data) SELECT zoom_level, tile_column, tile_row, tile_data FROM large.tiles; DELETE FROM metadata WHERE name IN ('bounds', 'center'); INSERT INTO metadata SELECT name, value FROM large.metadata WHERE name IN ('bounds', 'center'); COMMIT; DETACH DATABASE large;"
     rm "$LARGE_NAME"
     mv $SMALL_NAME $OUT_DIR
     echo "Result written to $OUT_DIR"
