@@ -30,7 +30,7 @@
             "combine_below": 15
         },
         "water_lines_labels": {
-            "minzoom": 4,
+            "minzoom": 13,
             "maxzoom": 14,
             "simplify_below": 14,
             "simplify_level": 0.0002,
