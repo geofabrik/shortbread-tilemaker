@@ -1151,6 +1151,22 @@ function way_function()
 		return
 	end
 
+	-- island mames into places layer
+	-- because not all have name as point
+	if place == "island" then
+		LayerAsCentroid("place_labels", "polylabel", "label")
+		Attribute("kind", place)
+		AttributeNumeric("area", area)
+		MinZoom(8)
+		setNameAttributes()
+		local population = Find("population")
+		local populationNum = tonumber(population)
+		if populationNum ~= nil then
+			AttributeNumeric("population", populationNum)
+			ZOrder(populationNum)
+		end
+	end
+
 	-- Layer addresses
 	local housenumber = Find("addr:housenumber")
 	local housename = Find("addr:housename")
