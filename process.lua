@@ -40,7 +40,7 @@ end
 
 -- Process node tags
 
-poi_amenity_values = Set { "police", "fire_station", "post_box", "post_office", "telephone",
+poi_amenity_values = Set { "police", "fire_station", "fuel", "post_box", "post_office", "telephone",
 	"library", "townhall", "courthouse", "prison", "embassy", "community_centre", "nursing_home",
 	"arts_centre", "grave_yard", "marketplace", "recycling", "university", "school", "college", "public_building",
 	"pharmacy", "hospital", "clinic", "doctors", "dentist", "veterinary", "theatre", "nightclub", "cinema",
@@ -48,7 +48,7 @@ poi_amenity_values = Set { "police", "fire_station", "post_box", "post_office", 
 	"car_rental", "car_wash", "car_sharing", "bicycle_rental", "vending_machine", "bank", "atm",
 	"toilets", "bench", "drinking_water", "fountain", "hunting_stand", "waste_basket", "place_of_worship" }
 catering_values = Set { "restaurant", "fast_food", "pub", "bar", "cafe" }
-poi_leisure_values = Set { "playground", "dog_park", "sports_centre", "pitch", "swimming_pool", "water_park",
+poi_leisure_values = Set { "playground", "dog_park", "park", "sports_centre", "pitch", "swimming_pool", "water_park",
 	"golf_course", "stadium", "ice_rink" }
 sport_values = Set { "pitch", "sports_centre" }
 poi_tourism_values = Set { "hotel", "motel", "artwork", "bed_and_breakfast", "guest_house", "hostel", "chalet",
