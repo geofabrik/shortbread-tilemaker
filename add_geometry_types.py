@@ -1,7 +1,13 @@
 #! /usr/bin/env python3
 
+# This script allows you to add the missing "tilestats" field to the metadata.
+# The field is required by GDAL's MVT driver. Without this field being present,
+# GDAL will read all tiles and determine the available layers and their geometry
+# types when it opens the tileset.
+
 import argparse
 import json
+import sqlite3
 import sys
 
 def compare_layer_lists(vector_layers, tilestats_layers):
@@ -37,17 +43,46 @@ def validate_vector_layers(data):
     layers = data["vector_layers"]
     for l in layers:
         if len(l.get("fields", [])) == 0:
-            sys.stderr.write("ERROR: Layer {} has no fields. OGR will do a sequential read on all tiles of the requested zoom level!\n".format(l["id"]))
-            exit(1)
+            sys.stderr.write("WARNING: Layer {} has no fields. OGR will do a sequential read on all tiles of the requested zoom level!\n".format(l["id"]))
+
+
+def is_sqlite(path):
+    if path.endswith('.json'):
+        return False
+    if path.endswith('.mbtiles'):
+        return True
+    with open(path, 'rb') as f:
+        if f.read(15) == b'SQLite format 3':
+            return True
+    return False
+
+
+def read_json_file(json_file_path):
+    with open(json_file_path, 'r') as f:
+        return json.load(f)
+
+
+def read_mbtiles_metadata(db):
+    with sqlite3.connect(db) as conn:
+        cur = conn.cursor()
+        results = cur.execute("SELECT value FROM metadata where name = 'json'")
+        rowstr = results.fetchone()[0]
+        if rowstr is None:
+            sys.stderr.write("ERROR: MBTiles has no metadata field named 'json'\n")
+            sys.exit(1)
+        return json.loads(rowstr)
 
 
 parser = argparse.ArgumentParser(description="Convert a metadata.json file created by Tilelive/Tessera into a metadata.json file needed by GDAL's MVT driver.")
-parser.add_argument("input_file", type=argparse.FileType("r"), help="Input metadata.json file")
-parser.add_argument("tilestats_file", type=argparse.FileType("r"), help="Geometry definitions for layers (contains a JSON with a tileStats field)")
+parser.add_argument("input_file", type=str, help="Input metadata.json file")
+parser.add_argument("tilestats_file", type=str, help="Geometry definitions for layers (contains a JSON with a tileStats field)")
 args = parser.parse_args()
 
 # Read input file
-input_data = json.load(args.input_file)
+if is_sqlite(args.input_file):
+    input_data = read_mbtiles_metadata(args.input_file)
+else:
+    input_data = read_json_file(args.input_file)
 if "json" in input_data:
     # vector_layers as encoded JSON – this is the metadata.json written by mbutil
     json_data = json.loads(input_data["json"])
@@ -62,7 +97,7 @@ else:
 
 if "tilestats" not in json_data or json_data["tilestats"] == {}:
     # Read tilestats_file
-    tilestats = json.load(args.tilestats_file)
+    tilestats = read_json_file(args.tilestats_file)
     validate_tilestats(tilestats)
     if "tilestats" not in tilestats:
         sys.stderr.write("Tilestats file misses 'tilestats' member.\n")
