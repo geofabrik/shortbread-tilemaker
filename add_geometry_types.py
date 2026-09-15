@@ -62,6 +62,18 @@ def read_json_file(json_file_path):
         return json.load(f)
 
 
+def update_json_file(json_file_path, data):
+    with open(json_file_path, 'w') as f:
+        return json.dump(data, f)
+
+
+def update_sqlite(db, data):
+    with sqlite3.connect(db) as conn:
+        cur = conn.cursor()
+        cur.execute("UPDATE metadata SET value = ? WHERE name = 'json'", (json.dumps(data),))
+        conn.commit()
+
+
 def read_mbtiles_metadata(db):
     with sqlite3.connect(db) as conn:
         cur = conn.cursor()
@@ -74,12 +86,14 @@ def read_mbtiles_metadata(db):
 
 
 parser = argparse.ArgumentParser(description="Convert a metadata.json file created by Tilelive/Tessera into a metadata.json file needed by GDAL's MVT driver.")
+parser.add_argument("-u", "--update", action="store_true", help="Update the metadata of the input file instead of writing the updated metadata to standard output.")
 parser.add_argument("input_file", type=str, help="Input metadata.json file")
 parser.add_argument("tilestats_file", type=str, help="Geometry definitions for layers (contains a JSON with a tileStats field)")
 args = parser.parse_args()
 
 # Read input file
-if is_sqlite(args.input_file):
+input_sqlite = is_sqlite(args.input_file)
+if input_sqlite:
     input_data = read_mbtiles_metadata(args.input_file)
 else:
     input_data = read_json_file(args.input_file)
@@ -113,8 +127,17 @@ else:
     sys.stderr.write("Ignoring tilestats file because input file contains a tilestats property already\n")
     validate_tilestats(json_data)
 
-input_data["json"] = json.dumps(json_data)
-input_data.pop("vector_layers", None)
-input_data.pop("tilestats", None)
 
-sys.stdout.write(json.dumps(input_data))
+if args.update:
+    # Writing a field "json" is not necessary for GDAL to skip a full-table scan.
+    input_data["vector_layers"] = json_data["vector_layers"]
+    input_data["tilestats"] = json_data["tilestats"]
+    if input_sqlite:
+        update_sqlite(args.input_file, input_data)
+    else:
+        update_json_file(args.input_file, input_data)
+else:
+    input_data["json"] = json.dumps(json_data)
+    input_data.pop("vector_layers", None)
+    input_data.pop("tilestats", None)
+    sys.stdout.write(json.dumps(input_data))
