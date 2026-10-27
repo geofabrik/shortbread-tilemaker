@@ -133,6 +133,7 @@
             "maxzoom": 14,
             "source": "data/water-polygons-split-4326/water_polygons.shp",
             "source_columns": true,
+            "simplify_algorithm": "visvalingam",
             "simplify_below": 14,
             "simplify_level": 0.0001,
             "simplify_ratio": 2
@@ -142,6 +143,7 @@
             "maxzoom": 7,
             "source": "data/simplified-water-polygons-split-4326/simplified_water_polygons.shp",
             "source_columns": true,
+            "simplify_algorithm": "visvalingam",
             "simplify_below": 14,
             "simplify_level": 0.0001,
             "simplify_ratio": 2,
@@ -155,11 +157,13 @@
         "land": {
             "minzoom": 7,
             "maxzoom": 14,
+            "simplify_algorithm": "visvalingam",
             "simplify_below": 14,
             "simplify_level": 0.0001,
             "simplify_ratio": 2
         },
         "sites": {
+            "simplify_algorithm": "visvalingam",
             "minzoom": 14,
             "maxzoom": 14
         },
